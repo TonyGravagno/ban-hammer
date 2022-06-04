@@ -1,3 +1,8 @@
+= 2.9.0 =
+* June 2022 by Starbuck
+* Refactor Drop testing to support more than one field
+* Add support for testing user name in addition to existing user email test
+
 = 2.7.1 =
 * August 2020 by Ipstenu
 * Typo fixed. Saving works. My bad!

@@ -2,8 +2,8 @@
 /*
 Plugin Name: Ban Hammer
 Plugin URI: http://halfelf.org/plugins/ban-hammer/
-Description: Prevent people from registering with any email you list.
-Version: 2.8
+Description: Prevent people from registering with any email or user name you list.
+Version: 2.9
 Author: Mika Epstein
 Author URI: http://halfelf.org/
 Network: true
@@ -361,6 +361,8 @@ class BanHammer {
 	
 	/**
 	 * Check User Login Callback
+	 *
+	 * @since 2.9
 	 */
 	public function check_user_login_callback() {
 		?>
@@ -491,6 +493,12 @@ class BanHammer {
 		return $drop;
 	}
 
+	/**
+	 * Actual testing done here
+	 *
+	 * @since 2.9
+	 * @access private
+	 */
 	private function test_drop($bannedlist_array, $field, $errors) {
 		$bannedlist_size   = count( $bannedlist_array );
 		// Go through bannedlist

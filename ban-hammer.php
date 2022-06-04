@@ -42,7 +42,7 @@ class BanHammer {
 	public $options;
 
 	// DB version, for schema upgrades.
-	public $db_version = 1;
+	public $db_version = 2;
 
 	// Constants
 	public $buddypress;
@@ -79,6 +79,7 @@ class BanHammer {
 			'redirect'     => 'no',
 			'redirect_url' => 'http://example.com',
 			'message'      => __( '<strong>ERROR</strong>: Your email has been banned from registration.', 'ban-hammer' ),
+			'check_user_login' => false
 		);
 
 		// Fetch and set up options.
@@ -187,6 +188,10 @@ class BanHammer {
 			// Delete old options
 			delete_site_option( 'banhammer_message' );
 		}
+		if ( $current_db_version < 2 ) {
+			$this->options['check_user_login']   = false;
+			$this->options['db_version']   = '2';
+		}
 
 		update_site_option( $this->option_name, $this->options );
 	}
@@ -264,6 +269,13 @@ class BanHammer {
 					$output['redirect_url'] = $options['redirect_url'];
 				}
 
+				// User name / login
+				if ( ! isset( $input['check_user_login'] ) || is_null( $input['check_user_login'] ) || '0' === $input['check_user_login'] ) {
+					$output['check_user_login'] = false;
+				} else {
+					$output['check_user_login'] = true;
+				}
+
 				$this->options = $output;
 				update_site_option( $this->option_name, $output );
 
@@ -289,6 +301,7 @@ class BanHammer {
 		add_settings_field( 'message', __( 'Blocked Message', 'ban-hammer' ), array( &$this, 'message_callback' ), 'ban-hammer-settings', 'banhammer-settings' );
 		add_settings_field( 'redirect', __( 'Redirect Blocked Users?', 'ban-hammer' ), array( &$this, 'redirect_callback' ), 'ban-hammer-settings', 'banhammer-settings' );
 		add_settings_field( 'bannedlist', __( 'The Blocked List', 'ban-hammer' ), array( &$this, 'bannedlist_callback' ), 'ban-hammer-settings', 'banhammer-settings' );
+		add_settings_field( 'check_user_login', __( 'Check User Login?', 'ban-hammer' ), array( &$this, 'check_user_login_callback' ), 'ban-hammer-settings', 'banhammer-settings' );
 	}
 
 	/**
@@ -344,6 +357,18 @@ class BanHammer {
 			<br /><span class="description"><?php esc_html_e( 'Set redirect URL (example: http://example.com).', 'ban-hammer' ); ?></span></p>
 			<?php
 		}
+	}
+	
+	/**
+	 * Check User Login Callback
+	 */
+	public function check_user_login_callback() {
+		?>
+		<p><?php esc_html_e( 'In addition to checking email addresses against the blocked list, you can also check the user name / login ID.', 'ban-hammer' ); ?></p>
+		<p><input type="checkbox" id="banhammer_options[check_user_login]" name="banhammer_options[check_user_login]" value="no" <?php checked( $this->options['check_user_login'], 'yes', true ); ?> <?php checked( $this->options['check_user_login'], '1', true ); ?> >
+		<label for="banhammer_options[check_user_login]"><?php esc_html_e( 'Test user name in registration.', 'ban-hammer' ); ?></label></p>
+
+		<?php
 	}
 
 	/**
@@ -430,6 +455,13 @@ class BanHammer {
 		} else {
 			$input['redirect_url'] = $options['redirect_url'];
 		}
+		
+		// User login / name
+		if ( ! isset( $input['check_user_login'] ) || is_null( $input['check_user_login'] ) || '0' === $input['check_user_login'] ) {
+			$input['check_user_login'] = 'no';
+		} else {
+			$input['check_user_login'] = 'yes';
+		}
 
 		return $input;
 	}
@@ -447,6 +479,14 @@ class BanHammer {
 		$bannedlist_array  = explode( "\n", $bannedlist_string );
 
 		$drop = $this->test_drop($bannedlist_array, $user_email, $errors);
+		if($drop)
+			return $drop;
+
+		if($this->options('check_user_login') ?? false) {
+			$drop = $this->test_drop($bannedlist_array, $user_login, $errors);
+		}
+		if($drop)
+			return $drop; // yes, redundant at this moment, soon not...
 
 		return $drop;
 	}

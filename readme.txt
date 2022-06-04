@@ -15,6 +15,8 @@ We've all had this problem: a group of spammers from `mail.ru` are registering t
 
 Ban Hammer helps you do that by preventing unwanted users from registering.
 
+New in version 2.9: Tired of people registering with user name 'manager', 'admin', 'administrator', or 'owner'? Ban Hammer now does the same check on user name/login entry as it's always done for the email address. See the 'User Name Hammer' section below for details.
+
 On a single install of WordPress, instead of using its own database table, Ban Hammer pulls from your list of prohibited emails from the Disallowed Comment Keys feature, native to WordPress.  Since emails never equal IP addresses, it simply skips over and ignores them.
 
 On a network instance, there's a network wide setting for banned emails and domains. This means you only have <em>one</em> place to update and maintain your blocked list.  When a listed user attempts to register, they get a customizable message that they cannot register.
@@ -37,9 +39,8 @@ Many thanks are due to WP-Deadbolt, for making me think about SQL and TTC for St
 
 ==Changelog==
 
-= 2.8 =
-* February 2021 by Ipstenu
-* Removing check for if registration is active
+* June 2022 by Starbuck
+* Add support for testing user name in addition to existing user email test
 
 == Installation ==
 
@@ -58,6 +59,12 @@ After installation, go to **Network Admin > Settings > Ban Hammer** to customize
 3. Ban Hammer Users
 4. Users Menu, with Spammer Flag on
 5. BuddyPress Error message
+
+== User Name Hammer ==
+
+By default, Ban Hammer tests all email addresses entered during registration. Activating the same testing for the user name is as simple as checking a box and saving the configuration. Remember that the ban words are tested as substrings. So as noted below, if the ban text is 'cookie' and 'cookiemonster' from Sesame Street won't be able to create an account. :(
+
+Email address testing is always done - nothing changes there. This new feature only adds more functionality. At this time email address testing cannot be disabled.
 
 == Frequently Asked Questions ==
 
@@ -88,5 +95,7 @@ You have to make your own hook because WooCommerce doesn't use the normal regist
 = Can I block partials? =
 
 Yes but not wildcards. If you put in `viagra` for example, you will block `viagrajones@gmail.com` _and_ `john@viagra.com` so please use this carefully. If you put in `cookie` then you'll block `cookiemonster@sesamestreet.edu` and everyone would be sad.
+
+Similarly, registration will be blocked if you use 'cookie', you are checking the user login, and the name is 'morecookiesplease'.
 
 If you want to block everyone from all subdomains (like `joe@bar.example.com`) then you can block `.example.com` and that will block all the subdomains.

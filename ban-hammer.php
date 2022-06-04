@@ -445,12 +445,18 @@ class BanHammer {
 	public function banhammer_drop( $user_login, $user_email, $errors ) {
 		$bannedlist_string = $this->bannedlist;
 		$bannedlist_array  = explode( "\n", $bannedlist_string );
-		$bannedlist_size   = count( $bannedlist_array );
 
+		$drop = $this->test_drop($bannedlist_array, $user_email, $errors);
+
+		return $drop;
+	}
+
+	private function test_drop($bannedlist_array, $field, $errors) {
+		$bannedlist_size   = count( $bannedlist_array );
 		// Go through bannedlist
 		for ( $i = 0; $i < $bannedlist_size; $i++ ) {
 			$bannedlist_current = trim( $bannedlist_array[ $i ] );
-			if ( stripos( $user_email, $bannedlist_current ) !== false ) {
+			if ( stripos( $field, $bannedlist_current ) !== false ) {
 
 				$errors->add( 'invalid_email', $this->options['message'] );
 				if ( 'yes' === $this->options['redirect'] ) {
@@ -461,6 +467,7 @@ class BanHammer {
 			}
 		}
 	}
+
 
 	/**
 	 * Validation
